@@ -36,6 +36,10 @@
         <!-- Three.JS Core -->
         <script src="js/three.min.js"></script>
 
+        <!-- Three.JS Additions -->
+        <script src="js/three.colorExtensions.js"></script>
+        <script src="js/three.pbrUtilities.js"></script>
+
         <!-- Additional Utils -->
         <script src="js/Detector.js"></script>
         <script src="js/stats.min.js"></script>
@@ -50,7 +54,8 @@
 
             vec4 getDiffuseColor()
             {
-                return diffuseFactor;
+                float specularStrength = max( max( specularFactor.r, specularFactor.g ), specularFactor.b );
+                return vec4( vec3( diffuseFactor ) * ( 1.0 - specularStrength ), diffuseFactor.a );
             }
 
             float getSpecularRoughness()
@@ -67,14 +72,14 @@
         <script id="fragmentShaderMetallicRoughness" type="x-shader/x-fragment">
             precision highp float;
 
+            uniform vec3  dielectricSpecular;
             uniform vec4  baseColorFactor;
             uniform float metallicFactor;
             uniform float roughnessFactor;
-            uniform float reflectivityFactor;
 
             vec4 getDiffuseColor()
             {
-                return vec4( vec3( baseColorFactor ) * ( 1.0 - metallicFactor ), baseColorFactor.a );
+                return vec4( vec3( baseColorFactor ) * ( 1.0 - dielectricSpecular.r ) * ( 1.0 - metallicFactor ), baseColorFactor.a );
             }
 
             float getSpecularRoughness()
@@ -84,8 +89,7 @@
 
             vec3 getSpecularColor()
             {
-                float f0 = 0.16 * reflectivityFactor * reflectivityFactor;
-                return mix( vec3( f0 ), vec3( baseColorFactor ), metallicFactor );
+                return mix( dielectricSpecular, vec3( baseColorFactor ), metallicFactor );
             }
         </script>
 
@@ -418,23 +422,27 @@
 
 
         <script>
-            var MetallicRoughness = function () {
-                this.baseColor = "#7f7f7f";
-                this.opacity = 1.0;
-                this.metallic = 0.0;
-                this.roughness = 0.5;
-                this.reflectivity = 0.5;
+            var Options = function () {
+                var MetallicRoughness = function () {
+                    this.baseColor = "#7f7f7f";
+                    this.opacity = 1;
+                    this.metallic = 0;
+                    this.roughness = 0.5;
+                }
+
+                var SpecularGlossiness = function () {
+                    this.diffuse = "#7f7f7f";
+                    this.opacity = 1;
+                    this.specular = "#0a0a0a";
+                    this.glossiness = 0.5;
+                }
+
+                this.autoUpdate = true;
+                this.metallicRoughness = new MetallicRoughness();
+                this.specularGlossiness = new SpecularGlossiness();
             }
 
-            var SpecularGlossiness = function () {
-                this.diffuse = "#7f7f7f";
-                this.opacity = 1.0;
-                this.specular = "#0a0a0a";
-                this.glossiness = 0.5;
-            }
-
-            var metallicRoughness = new MetallicRoughness();
-            var specularGlossiness = new SpecularGlossiness();
+            var options = new Options();
             var gui = new dat.GUI();
 
             if (!Detector.webgl)
@@ -452,19 +460,20 @@
 
             function init()
             {
+                gui.add(options, 'autoUpdate');
+
                 var metallicRoughnessFolder = gui.addFolder("Metallic-Roughness");
-                gui.addColor(metallicRoughness, 'baseColor').onChange(onMetallicRoughnessChange);
-                gui.add(metallicRoughness, 'opacity', 0.0, 1.0, 0.01).onChange(onMetallicRoughnessChange);
-                gui.add(metallicRoughness, 'metallic', 0.0, 1.0, 0.01).onChange(onMetallicRoughnessChange);
-                gui.add(metallicRoughness, 'roughness', 0.0, 1.0, 0.01).onChange(onMetallicRoughnessChange);
-                gui.add(metallicRoughness, 'reflectivity', 0.0, 1.0, 0.01).onChange(onMetallicRoughnessChange);
+                gui.addColor(options.metallicRoughness, 'baseColor').onChange(onMetallicRoughnessChange);
+                gui.add(options.metallicRoughness, 'opacity', 0, 1, 0.001).onChange(onMetallicRoughnessChange);
+                gui.add(options.metallicRoughness, 'metallic', 0, 1, 0.001).onChange(onMetallicRoughnessChange);
+                gui.add(options.metallicRoughness, 'roughness', 0, 1, 0.001).onChange(onMetallicRoughnessChange);
                 metallicRoughnessFolder.open();
 
                 var specularGlossinessFolder = gui.addFolder("Specular-Glossiness");
-                gui.addColor(specularGlossiness, 'diffuse').onChange(onSpecularGlossinessChange);
-                gui.add(specularGlossiness, 'opacity', 0.0, 1.0, 0.01).onChange(onSpecularGlossinessChange);
-                gui.addColor(specularGlossiness, 'specular', 0.0, 1.0, 0.01).onChange(onSpecularGlossinessChange);
-                gui.add(specularGlossiness, 'glossiness', 0.0, 1.0, 0.01).onChange(onSpecularGlossinessChange);
+                gui.addColor(options.specularGlossiness, 'diffuse').onChange(onSpecularGlossinessChange);
+                gui.add(options.specularGlossiness, 'opacity', 0, 1, 0.001).onChange(onSpecularGlossinessChange);
+                gui.addColor(options.specularGlossiness, 'specular', 0, 1, 0.001).onChange(onSpecularGlossinessChange);
+                gui.add(options.specularGlossiness, 'glossiness', 0, 1, 0.001).onChange(onSpecularGlossinessChange);
                 specularGlossinessFolder.open();
 
                 container = document.getElementById('container');
@@ -552,15 +561,23 @@
             //
 
             function onMetallicRoughnessChange() {
-                updateSpecularGlossinessFromMetallicRoughness();
-                updateMaterials();
-                updateGUI();
+                updateMetallicRoughnessMaterial();
+
+                if (options.autoUpdate) {
+                    updateSpecularGlossinessFromMetallicRoughness();
+                    updateSpecularGlossinessMaterial();
+                    updateGUI();
+                }
             }
 
             function onSpecularGlossinessChange() {
-                updateMetallicRoughnessFromSpecularGlossiness();
-                updateMaterials();
-                updateGUI();
+                updateSpecularGlossinessMaterial();
+
+                if (options.autoUpdate) {
+                    updateMetallicRoughnessFromSpecularGlossines();
+                    updateMetallicRoughnessMaterial();
+                    updateGUI();
+                }
             }
 
             function updateGUI() {
@@ -570,89 +587,52 @@
             }
 
             function updateSpecularGlossinessFromMetallicRoughness() {
-                specularGlossiness.opacity = metallicRoughness.opacity;
-                specularGlossiness.glossiness = 1.0 - metallicRoughness.roughness;
+                var metallicRoughness = {
+                    baseColor: new THREE.Color(options.metallicRoughness.baseColor),
+                    opacity: options.metallicRoughness.opacity,
+                    metallic: options.metallicRoughness.metallic,
+                    roughness: options.metallicRoughness.roughness
+                };
 
-                specularGlossiness.diffuse = '#' + new THREE.Color(metallicRoughness.baseColor).multiplyScalar(1.0 - metallicRoughness.metallic).getHexString();
+                var specularGlossiness = THREE.PbrUtilities.ConvertToSpecularGlossiness(metallicRoughness);
 
-                var f0 = 0.16 * metallicRoughness.reflectivity * metallicRoughness.reflectivity;
-                specularGlossiness.specular = '#' + new THREE.Color(f0, f0, f0).lerp(new THREE.Color(metallicRoughness.baseColor), metallicRoughness.metallic).getHexString();
+                options.specularGlossiness.diffuse = "#" + specularGlossiness.diffuse.getHexString();
+                options.specularGlossiness.opacity = specularGlossiness.opacity;
+                options.specularGlossiness.specular = "#" + specularGlossiness.specular.getHexString();
+                options.specularGlossiness.glossiness = specularGlossiness.glossiness;
             }
 
-            function updateMetallicRoughnessFromSpecularGlossiness() {
-                metallicRoughness.opacity = specularGlossiness.opacity;
-                metallicRoughness.roughness = 1.0 - specularGlossiness.glossiness;
+            function updateMetallicRoughnessFromSpecularGlossines() {
+                var specularGlossiness = {
+                    diffuse: new THREE.Color(options.specularGlossiness.diffuse),
+                    opacity: options.specularGlossiness.opacity,
+                    specular: new THREE.Color(options.specularGlossiness.specular),
+                    glossiness: options.specularGlossiness.glossiness
+                };
 
-                var diffuse = new THREE.Color(specularGlossiness.diffuse);
-                var specular = new THREE.Color(specularGlossiness.specular);
+                var metallicRoughness = THREE.PbrUtilities.ConvertToMetallicRoughness(specularGlossiness);
 
-                // Compute metallic value from diffuse and specular where
-                //  f0 is the default reflectivity unless it is not possible to represent the colors using this default
-                //  d is diffuse lightness (i.e. the V component of HSV representation of diffuse)
-                //  s is specular lightness (i.e. the V component of HSV representation of specular)
-                //  b is base color lightness (i.e. the V component of HSV representation of base color)
-                //  m is metallic factor
-                //  Equations:
-                //  [1] d = b * (1 - m)
-                //  [2] s = f0 * (1 - m) + b * m
-                var f0 = 0.04;
-                var d = Math.max(diffuse.r, diffuse.g, diffuse.b);
-                var s = Math.max(specular.r, specular.g, specular.b);
-                var m;
-
-                // If s is less than f0 there is no m that satifies equation [2]
-                // When this happens, set m to 0 and reduce f0 to satify equation [2]
-                if (s < f0) {
-                    m = 0;
-                    f0 = s;
-                }
-                else {
-                    var ds = d + s;
-
-                    // m is derived by solving for m using equations [1] and [2]
-                    m = 1 - (ds - Math.sqrt(ds * ds - 4 * f0 * d)) / (2 * f0);
-
-                    // b = d / (1 - m), derived from equation [1]
-                    // If d is greater than (1 - m) then b will be greater than 1 which is not a valid lightness value
-                    // When this happens, set m such that b is 1 and increase f0 to satify equation [2]
-                    if (m > 1 - d) {
-                        m = 1 - d;
-                        f0 = (ds - 1) / d;
-                    }
-                }
-
-                var baseColor;
-                if (m === 1) {
-                    // Set base color to specular if fully metallic
-                    baseColor = specular;
-                }
-                else {
-                    // Base color is a blend of diffuse and specular
-                    // REVIEW: Not sure this is the correct formula
-                    baseColor = new THREE.Color(diffuse).lerp(specular, m * specularGlossiness.glossiness);
-
-                    // Update base color to computed lightness
-                    baseColor.multiplyScalar(d / (1 - m) / Math.max(baseColor.r, baseColor.g, baseColor.b));
-                }
-
-                metallicRoughness.baseColor = '#' + baseColor.getHexString();
-                metallicRoughness.metallic = m;
-                metallicRoughness.reflectivity = Math.sqrt(f0 / 0.16);
+                options.metallicRoughness.baseColor = "#" + metallicRoughness.baseColor.getHexString();
+                options.metallicRoughness.opacity = metallicRoughness.opacity;
+                options.metallicRoughness.metallic = metallicRoughness.metallic;
+                options.metallicRoughness.roughness = metallicRoughness.roughness;
             }
 
-            function updateMaterials() {
-                var metallicRoughnessUniforms = scene.getObjectByName('Metallic-Roughness').material.uniforms;
-                var baseColor = new THREE.Color(metallicRoughness.baseColor);
-                metallicRoughnessUniforms.baseColorFactor = { value: new THREE.Vector4(baseColor.r, baseColor.g, baseColor.b, metallicRoughness.opacity) };
-                metallicRoughnessUniforms.metallicFactor = { value: metallicRoughness.metallic };
-                metallicRoughnessUniforms.roughnessFactor = { value: metallicRoughness.roughness };
-                metallicRoughnessUniforms.reflectivityFactor = { value: metallicRoughness.reflectivity };
+            function updateMetallicRoughnessMaterial() {
+                var uniforms = scene.getObjectByName('Metallic-Roughness').material.uniforms;
+                var baseColor = new THREE.Color(options.metallicRoughness.baseColor);
+                uniforms.dielectricSpecular = { value: THREE.PbrUtilities.DielectricSpecular };
+                uniforms.baseColorFactor = { value: new THREE.Vector4(baseColor.r, baseColor.g, baseColor.b, options.metallicRoughness.opacity) };
+                uniforms.metallicFactor = { value: options.metallicRoughness.metallic };
+                uniforms.roughnessFactor = { value: options.metallicRoughness.roughness };
+            }
 
-                var specularGlossinessUniforms = scene.getObjectByName('Specular-Glossiness').material.uniforms;
-                var diffuse = new THREE.Color(specularGlossiness.diffuse);
-                specularGlossinessUniforms.diffuseFactor = { value: new THREE.Vector4(diffuse.r, diffuse.g, diffuse.b, specularGlossiness.opacity) };
-                specularGlossinessUniforms.specularFactor = { value: new THREE.Color(specularGlossiness.specular) };
-                specularGlossinessUniforms.glossinessFactor = { value: specularGlossiness.glossiness };
+            function updateSpecularGlossinessMaterial() {
+                var uniforms = scene.getObjectByName('Specular-Glossiness').material.uniforms;
+                var diffuse = new THREE.Color(options.specularGlossiness.diffuse);
+                uniforms.diffuseFactor = { value: new THREE.Vector4(diffuse.r, diffuse.g, diffuse.b, options.specularGlossiness.opacity) };
+                uniforms.specularFactor = { value: new THREE.Color(options.specularGlossiness.specular) };
+                uniforms.glossinessFactor = { value: options.specularGlossiness.glossiness };
             }
 
             function createMaterial(workflow) {
@@ -673,7 +653,7 @@
                 canvas.height = fontSize * 1.4;
 
                 context.font = font;
-                context.fillStyle = 'rgba(0, 0, 0, 1.0)';
+                context.fillStyle = 'rgba(0, 0, 0, 1)';
                 context.fillText(message, 0, fontSize);
 
                 var texture = new THREE.Texture(canvas)
