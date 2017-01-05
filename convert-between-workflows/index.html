@@ -100,7 +100,8 @@
             //uniform float toneMappingExposure;
             //uniform float toneMappingWhitePoint;            
 
-            uniform sampler2D envMap;
+            uniform samplerCube irrMap;
+            uniform samplerCube envMap;
 
             varying vec3 vViewPosition;
             varying vec3 vNormal;
@@ -165,23 +166,6 @@
             //                IRRADIANCE EVALUATION                //
             /////////////////////////////////////////////////////////
 
-            vec3 sampleEnvMapEquirect(const in vec3 reflect, const in float mipLevel)
-            {
-                vec2 sampleUV;
-                sampleUV.y = saturate(reflect.y * 0.5 + 0.5);
-                sampleUV.x = atan(reflect.z, reflect.x) * RECIPROCAL_PI2 + 0.5;
-    
-                //with textureLOD extension:
-                //vec4 envMapColor = texture2DLodEXT(envMap, sampleUV, specularMIPLevel);
-
-                //without textureLOD extension:
-                vec4 texColor = texture2D(envMap, sampleUV, mipLevel);
-
-                // assumed to be linear
-                return texColor.rgb;
-            }
-            
-
             float GGXRoughnessToBlinnExponent(const in float ggxRoughness)
             {
                 return (2.0 / pow2(ggxRoughness + 0.0001) - 2.0);
@@ -196,14 +180,18 @@
             }
 
 
-            vec3 getLightProbeIndirectRadiance(const in GeometricContext geometry, const in float blinnShininessExponent, const in int maxMIPLevel)
+            vec3 getLightProbeIndirectRadiance(const in vec3 reflectVec, const in float blinnShininessExponent, const in int maxMIPLevel)
             {
-                vec3 reflectVec = reflect(geometry.viewDir, geometry.normal);
-                reflectVec = inverseTransformDirection(reflectVec, viewMatrix);
+                //TODO: a random factor - fix this
+                float mipLevel = 0.5 * getSpecularMIPLevel(blinnShininessExponent, maxMIPLevel);
+                
+                // with Texture LOD extension
+                //vec3 texColor = textureCubeLodEXT(envMap, reflectVec).rgb;
 
-                float mipLevel = getSpecularMIPLevel( blinnShininessExponent, maxMIPLevel );
+                // without Texture LOD extension
+                vec3 envMapColor = textureCube(envMap, reflectVec, mipLevel).rgb;
 
-                vec3 envMapColor = sampleEnvMapEquirect(reflectVec, float(mipLevel));
+                // assumed to be linear
 
                 //for sRGB input, use this line:
                 //return sRGBToLinear(vec4(envMapColor, 1.0)).rgb;
@@ -304,29 +292,32 @@
             //          MAIN LIGHTING COMPUTATION FUNCTION         //
             /////////////////////////////////////////////////////////
 
-            void computeLighting(const in IncidentLight directLight,
-                                 const in GeometricContext geometry,
+            void computeLighting(const in GeometricContext geometry,
                                  const in PhysicalMaterial material,
                                  inout ReflectedLight reflectedLight)
             {
-                float dotNL     = saturate(dot(geometry.normal, directLight.direction));
-                vec3 irradiance = dotNL * directLight.color;
+                // diffuse: sample irradiance over the hemisphere from cube map
 
+                vec3 irradiance = textureCube(irrMap, geometry.normal).rgb;
                 irradiance *= PI;
 
-                reflectedLight.diffuse  += irradiance * BRDF_Diffuse_Lambert(material.diffuseColor);
+                vec3 diffuseBRDFContrib = BRDF_Diffuse_Lambert(material.diffuseColor);
 
-                reflectedLight.specular += irradiance * BRDF_Specular_GGX(directLight,
-                                                                          geometry,
-                                                                          material.specularColor,
-                                                                          material.specularRoughness);
+                reflectedLight.diffuse  = irradiance * diffuseBRDFContrib;
 
-                //TODO: WIP, not consistent with the rest but just for visualizing the effect
-                /*
+
+                // specular: sample radiance using from the environment map
+
+                vec3 reflectVec = reflect(-geometry.viewDir, geometry.normal);
+                reflectVec      = inverseTransformDirection(reflectVec, viewMatrix);
+
                 float blinnExpFromRoughness = GGXRoughnessToBlinnExponent(material.specularRoughness);
-                vec3 radiance = getLightProbeIndirectRadiance(geometry, blinnExpFromRoughness, 8);
-                reflectedLight.specular += radiance * BRDF_Specular_GGX_Environment(geometry, material.specularColor, material.specularRoughness);
-                */
+                vec3 radiance               = getLightProbeIndirectRadiance(reflectVec, blinnExpFromRoughness, 8);
+
+                //TODO: not physically based, but just randomly using mip levels right now
+                vec3 specularBRDFContrib    = BRDF_Specular_GGX_Environment(geometry, material.specularColor, material.specularRoughness);
+
+                reflectedLight.specular     = radiance * specularBRDFContrib;
             }
 
 
@@ -336,23 +327,10 @@
 
             void main()
             {
-                // light definitions (simple directional lights)
+                // lighting information is given through our irradiance / radiance maps                
+                // - "uniform samplerCube irrMap" = irradiance cube map for diffuse lighting
+                // - "uniform samplerCube envMap" = radiance cube map for specular reflections
 
-                IncidentLight directLight0;
-                directLight0.direction = vec3(0.0, 0.0, 1.0);
-                //directLight0.color     = vec3(0.7, 0.7, 0.7);
-                directLight0.color     = 0.7 * vec3(1.0, 1.0, 1.0);
-
-                IncidentLight directLight1;
-                directLight1.direction = vec3(-0.71, 0.71, 0.0);
-                //directLight1.color     = vec3(0.5, 0.5, 0.5);
-                directLight1.color     = 0.7 * vec3(0.8, 0.6, 1.0);
-
-                IncidentLight directLight2;
-                directLight2.direction = vec3(0.71, 0.71, 0.0);
-                //directLight2.color     = vec3(0.5, 0.5, 0.5);
-                directLight2.color     = 0.7 * vec3(1.0, 0.8, 0.6);
-                
 
                 // material definition
 
@@ -379,9 +357,7 @@
                     vec3( 0.0, 0.0, 0.0 )  //specular
                 );
 
-                computeLighting(directLight0, geometry, material, reflectedLight);
-                computeLighting(directLight1, geometry, material, reflectedLight);
-                computeLighting(directLight2, geometry, material, reflectedLight);
+                computeLighting(geometry, material, reflectedLight);
             
                 vec3 outgoingLight = reflectedLight.diffuse + reflectedLight.specular;
 
@@ -453,6 +429,8 @@
             var container, stats;
             var camera, scene, renderer;
 
+            var cubeTexIrr, cubeTexEnv;
+
             init();
             animate();
 
@@ -483,6 +461,28 @@
 
                 scene = new THREE.Scene();
 
+                var ctIrr = 'images/Uffizi_Gallery_Irradiance_';
+                var ctEnv = 'images/Uffizi_Gallery_Radiance_';
+
+                var cubeTexURLsIrr = [
+                    ctIrr + "PX.png", ctIrr + "NX.png",
+                    ctIrr + "PY.png", ctIrr + "NY.png",
+                    ctIrr + "PZ.png", ctIrr + "NZ.png"
+                ];
+
+                var cubeTexURLsEnv = [
+                    ctEnv + "PX.png", ctEnv + "NX.png",
+                    ctEnv + "PY.png", ctEnv + "NY.png",
+                    ctEnv + "PZ.png", ctEnv + "NZ.png"
+                ];
+
+                cubeTexIrr = new THREE.CubeTextureLoader().load(cubeTexURLsIrr);
+                cubeTexEnv = new THREE.CubeTextureLoader().load(cubeTexURLsEnv);
+
+                cubeTexEnv.generateMipmaps = true;
+                cubeTexEnv.magFilter = THREE.LinearFilter;
+                cubeTexEnv.minFilter = THREE.LinearMipMapLinearFilter;
+
                 const sphereRadius = 2.0;
                 const sphereSegments = 64;
                 var sphereGeometry = new THREE.SphereGeometry(sphereRadius, sphereSegments, sphereSegments);
@@ -510,6 +510,10 @@
                     sphere.name = sphereName;
                     sphere.position.fromArray(sphereData.position);
                     scene.add(sphere);
+
+                    var customUniforms = sphere.material.uniforms;
+                    customUniforms['irrMap'] = { value: cubeTexIrr };
+                    customUniforms['envMap'] = { value: cubeTexEnv };
 
                     var label = makeTextSprite(sphereName, 48);
                     label.position.fromArray(sphereData.label.position);
