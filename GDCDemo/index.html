@@ -49,8 +49,8 @@
         var camera = null;
         var scene = null;
         var hdrSkybox = null;
-        var alpha = 4.71238898038469;
-        var beta = 1.5707963267948966;
+        var alpha = 4.712;
+        var beta = 1.2;
         var radius = 3;
         var hdrTextures = {};
 
@@ -94,7 +94,12 @@
 
                 updateEnvironment();
 
+                var time = performance.now();
                 engine.runRenderLoop(function () {
+                    var delta = performance.now() - time;
+                    time = performance.now();
+                    camera.alpha -= 0.25 / delta;
+
                     scene.render();
                 });
             });
