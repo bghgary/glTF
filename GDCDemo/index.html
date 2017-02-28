@@ -35,12 +35,14 @@
 
         var gui = new dat.GUI({ autoplace: false, width: 500 });
 
-        gui.add(options, "environment", [
+        var environmentNames = [
             "grayish",
             "country",
             "night_byopenfootage",
             "indoor_by_gregzaal_adaptive_samples"
-        ]).onChange(updateEnvironment);
+        ];
+
+        gui.add(options, "environment", environmentNames).onChange(updateEnvironment);
 
         var canvas = document.getElementById("renderCanvas");
         var engine = null;
@@ -50,6 +52,7 @@
         var alpha = 4.71238898038469;
         var beta = 1.5707963267948966;
         var radius = 3;
+        var hdrTextures = {};
 
         load("models/2.0/BoomBox/glTF/", "BoomBox.gltf");
 
@@ -84,6 +87,11 @@
                 camera.minZ = 0.1;
                 camera.maxZ = 1000;
 
+                for (var i = 0; i < environmentNames.length; i++) {
+                    var name = environmentNames[i];
+                    hdrTextures[name] = new BABYLON.HDRCubeTexture("images/" + name + ".babylon.hdr", scene);
+                }
+
                 updateEnvironment();
 
                 engine.runRenderLoop(function () {
@@ -101,7 +109,7 @@
                 scene.removeMesh(hdrSkybox);
             }
 
-            var hdrTexture = new BABYLON.HDRCubeTexture("images/" + options.environment + ".babylon.hdr", scene);
+            var hdrTexture = hdrTextures[options.environment];
 
             for (var i = 0; i < scene.meshes.length; i++) {
                 var material = scene.meshes[i].material;
