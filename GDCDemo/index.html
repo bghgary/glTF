@@ -29,6 +29,7 @@
     <script>
         var Options = function () {
             this.environment = "grayish";
+            this.autoRotate = true;
         }
 
         var options = new Options();
@@ -43,6 +44,7 @@
         ];
 
         gui.add(options, "environment", environmentNames).onChange(updateEnvironment);
+        gui.add(options, "autoRotate");
 
         var canvas = document.getElementById("renderCanvas");
         var engine = null;
@@ -98,7 +100,10 @@
                 engine.runRenderLoop(function () {
                     var delta = performance.now() - time;
                     time = performance.now();
-                    camera.alpha -= 0.001 * delta;
+
+                    if (options.autoRotate) {
+                        camera.alpha -= 0.0005 * delta;
+                    }
 
                     scene.render();
                 });
