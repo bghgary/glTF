@@ -3,6 +3,9 @@
 var createScene = function () {
     var scene = new THREE.Scene();
 
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
     var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 3;
 
@@ -20,13 +23,13 @@ var createScene = function () {
     var material = new THREE.MeshStandardMaterial({ color: 0xffffff });
     material.roughness = 1;
     material.metalness = 0;
-    material.normalMap = textureLoader.load("../normal.png");
+    material.normalMap = textureLoader.load("../normal.png", function () {
+        renderer.render(scene, camera);
+    });
 
     var mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.render(scene, camera);
 
     var controls = new THREE.OrbitControls(camera, renderer.domElement);
