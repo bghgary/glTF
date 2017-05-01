@@ -1,0 +1,267 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 2188,
+      "type": "VEC2",
+      "max": [
+        0.9743278,
+        -0.007476747
+      ],
+      "min": [
+        0.0319409668,
+        -0.989255667
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 2188,
+      "type": "VEC3",
+      "max": [
+        0.9997695,
+        0.99957794,
+        0.9999255
+      ],
+      "min": [
+        -0.9997695,
+        -0.9989679,
+        -0.9987249
+      ]
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 2188,
+      "type": "VEC4",
+      "max": [
+        0.99984026,
+        0.999033451,
+        0.9678841,
+        1.0
+      ],
+      "min": [
+        -0.999989867,
+        -0.999561965,
+        -0.999997139,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 2188,
+      "type": "VEC3",
+      "max": [
+        0.0690619648,
+        0.2866283,
+        0.3253729
+      ],
+      "min": [
+        -0.073841624,
+        -0.000878453255,
+        -0.317738324
+      ]
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5123,
+      "count": 11592,
+      "type": "SCALAR",
+      "max": [
+        2187
+      ],
+      "min": [
+        0
+      ]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 91,
+      "type": "SCALAR",
+      "max": [
+        2.99999857
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 91,
+      "type": "VEC4",
+      "max": [
+        0.007037401,
+        0.00470024347,
+        0.947696269,
+        1.18173289
+      ],
+      "min": [
+        -0.963578939,
+        -0.94462055,
+        -0.005508721,
+        0.38761276
+      ]
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5126,
+      "count": 91,
+      "type": "SCALAR",
+      "max": [
+        2.99999857
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 91,
+      "type": "VEC3",
+      "max": [
+        0.5,
+        -0.136,
+        0.0
+      ],
+      "min": [
+        -0.5,
+        -0.136,
+        0.0
+      ]
+    }
+  ],
+  "animations": [
+    {
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 0,
+            "path": "translation"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 5,
+          "interpolation": "LINEAR",
+          "output": 6
+        },
+        {
+          "input": 7,
+          "interpolation": "LINEAR",
+          "output": 8
+        }
+      ],
+      "name": "Rotate"
+    }
+  ],
+  "asset": {
+    "generator": "glTF Tools for Unity",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 17504
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 17504,
+      "byteLength": 26256
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 43760,
+      "byteLength": 35008
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 78768,
+      "byteLength": 26256
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 105024,
+      "byteLength": 23184
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 128208,
+      "byteLength": 364
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 128572,
+      "byteLength": 1456
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 130028,
+      "byteLength": 364
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 130392,
+      "byteLength": 1092
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "Animated.bin",
+      "byteLength": 131484
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 0,
+            "NORMAL": 1,
+            "TANGENT": 2,
+            "POSITION": 3
+          },
+          "indices": 4,
+          "material": 0
+        }
+      ],
+      "name": "barramundi_fish_Hero"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0.0
+      },
+      "name": "Animated"
+    }
+  ],
+  "nodes": [
+    {
+      "children": [],
+      "mesh": 0,
+      "name": "Animated"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}
