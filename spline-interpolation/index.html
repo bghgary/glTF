@@ -15,7 +15,6 @@
         #renderCanvas {
             width: 100%;
             height: 100%;
-            touch-action: none;
         }
     </style>
 
@@ -32,9 +31,7 @@
         var engine = new BABYLON.Engine(canvas, true);
         engine.enableOfflineSupport = false;
 
-        BABYLON.SceneLoader.Load("models/", "Animated.gltf", engine, function (loadedScene) {
-            scene = loadedScene;
-
+        BABYLON.SceneLoader.Load("models/", "Animated.gltf", engine, function (scene) {
             var camera = new BABYLON.ArcRotateCamera("camera", 4.71, 1.57, 2, BABYLON.Vector3.Zero(), scene);
             camera.attachControl(canvas);
             camera.minZ = 0.1;
