@@ -371,8 +371,7 @@ var BABYLON;
                 this._time = from;
                 this._updateTarget(target);
                 this._scene.registerBeforeRender(function () {
-                    var deltaTime = _this._scene.getEngine().getDeltaTime();
-                    _this._time += deltaTime / 1000.0;
+                    _this._time += _this._scene.animationDeltaTime / 1000.0;
                     while (_this._time >= to) {
                         _this._time -= (to - from);
                     }

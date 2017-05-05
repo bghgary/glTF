@@ -14728,6 +14728,8 @@ var BABYLON;
             this._activeBones = new BABYLON.PerfCounter();
             this._animationTime = 0;
             this.animationTimeScale = 1;
+            // HACK
+            this.animationDeltaTime = 0;
             this._renderId = 0;
             this._executeWhenReadyTimeoutId = -1;
             this._intermediateRendering = false;
@@ -15819,6 +15821,8 @@ var BABYLON;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
                 this._activeAnimatables[index]._animate(this._animationTime);
             }
+            // HACK
+            this.animationDeltaTime = deltaTime;
         };
         // Matrix
         Scene.prototype.getViewMatrix = function () {
@@ -33248,7 +33252,7 @@ var BABYLON;
                 }
                 return true;
             }
-            if (!this._localDelayOffset) {
+            if (this._localDelayOffset === undefined) {
                 this._localDelayOffset = delay;
             }
             else if (this._pausedDelay) {
