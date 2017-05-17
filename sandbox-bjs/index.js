@@ -74,11 +74,13 @@ if (BABYLON.Engine.isSupported()) {
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
-        // Attach camera to canvas inputs
-        if (!currentScene.activeCamera) {
-            currentScene.createDefaultCamera(true);
-        }
-        currentScene.activeCamera.attachControl(canvas);
+        var camera = new BABYLON.ArcRotateCamera("camera", 4.712, 1.571, 2, BABYLON.Vector3.Zero(), currentScene);
+        camera.attachControl(canvas);
+        camera.minZ = 0.1;
+        camera.maxZ = 100;
+        camera.lowerRadiusLimit = 0.1;
+        camera.upperRadiusLimit = 5;
+        camera.wheelPrecision = 100;
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (currentScene.meshes.length === 0 && currentScene.clearColor.r === 1 && currentScene.clearColor.g === 0 && currentScene.clearColor.b === 0) {
@@ -103,6 +105,7 @@ if (BABYLON.Engine.isSupported()) {
             }
         }
 
+        normalizeModel();
         updateEnvironment();
     };
 
@@ -176,6 +179,22 @@ if (BABYLON.Engine.isSupported()) {
         }, 5000);
     }
 
+    function normalizeModel() {
+        var model = new BABYLON.Mesh("model", currentScene);
+        currentScene.meshes.forEach(function (mesh) {
+            if (mesh !== model) {
+                mesh.setParent(model);
+            }
+        });
+        var extents = currentScene.getWorldExtends();
+        var size = extents.max.subtract(extents.min);
+        var center = extents.min.add(size.scale(0.5));
+        var maxSizeComponent = Math.max(size.x, size.y, size.z);
+        var oneOverLength = 1 / maxSizeComponent;
+        model.scaling.scaleInPlace(oneOverLength);
+        model.position.subtractInPlace(center.scale(oneOverLength));
+    }
+
     function updateEnvironment() {
         if (!settings.environment.name) {
             return;
@@ -190,6 +209,17 @@ if (BABYLON.Engine.isSupported()) {
             }
 
             hdrTexture = new BABYLON.HDRCubeTexture("Environments/" + settings.environment.name + ".babylon.hdr", currentScene);
+
+            skybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 100, currentScene);
+            skybox.material = new BABYLON.PBRMaterial("skyBox", currentScene);
+            skybox.material.reflectionTexture = hdrTexture.clone();
+            skybox.material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skybox.material.backFaceCulling = false;
+            skybox.material.microSurface = 1.0;
+            skybox.material.cameraExposure = 0.6;
+            skybox.material.cameraContrast = 1.6;
+            skybox.material.disableLighting = true;
+            skybox.infiniteDistance = true;
 
             updateModelReflectionTextures();
         }
