@@ -189,8 +189,7 @@ if (BABYLON.Engine.isSupported()) {
         var extents = currentScene.getWorldExtends();
         var size = extents.max.subtract(extents.min);
         var center = extents.min.add(size.scale(0.5));
-        var maxSizeComponent = Math.max(size.x, size.y, size.z);
-        var oneOverLength = 1 / maxSizeComponent;
+        var oneOverLength = 1 / size.length();
         model.scaling.scaleInPlace(oneOverLength);
         model.position.subtractInPlace(center.scale(oneOverLength));
     }
