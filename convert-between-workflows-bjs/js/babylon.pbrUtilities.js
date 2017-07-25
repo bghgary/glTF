@@ -60,7 +60,7 @@ var BABYLON;
             var oneMinusSpecularStrength = 1 - specular.getMaxComponent();
             var metallic = solveMetallic(diffuse.getPerceivedBrightness(), specular.getPerceivedBrightness(), oneMinusSpecularStrength);
 
-            var baseColorFromDiffuse = diffuse.scale(oneMinusSpecularStrength / ((1 - dielectricSpecular.r) * Math.max(1 - metallic, epsilon)));
+            var baseColorFromDiffuse = diffuse.scale(Math.min(oneMinusSpecularStrength / Math.max((1 - dielectricSpecular.r) * (1 - metallic), epsilon), 1));
             var baseColorFromSpecular = specular.subtract(dielectricSpecular.scale((1 - metallic) / Math.max(metallic, epsilon)));
             var baseColor = BABYLON.Color3.Lerp(baseColorFromDiffuse, baseColorFromSpecular, metallic * metallic);
 

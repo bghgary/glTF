@@ -59,7 +59,7 @@ var THREE;
             var oneMinusSpecularStrength = 1 - specular.getMaxComponent();
             var metallic = solveMetallic(diffuse.getPerceivedBrightness(), specular.getPerceivedBrightness(), oneMinusSpecularStrength);
 
-            var baseColorFromDiffuse = diffuse.clone().multiplyScalar(oneMinusSpecularStrength / Math.max((1 - dielectricSpecular.r) * (1 - metallic), epsilon));
+            var baseColorFromDiffuse = diffuse.clone().multiplyScalar(Math.min(oneMinusSpecularStrength / Math.max((1 - dielectricSpecular.r) * (1 - metallic), epsilon), 1));
             var baseColorFromSpecular = specular.clone().sub(dielectricSpecular.clone().multiplyScalar((1 - metallic) * (1 / Math.max(metallic, epsilon))));
             var baseColor = baseColorFromDiffuse.clone().lerp(baseColorFromSpecular, metallic * metallic).clamp();
 
