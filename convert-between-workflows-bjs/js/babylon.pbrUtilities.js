@@ -49,7 +49,7 @@ var BABYLON;
                 }
 
                 metallic = (-b + sqrtD) * oneOver2a;
-                return BABYLON.MathTools.Clamp(metallic, 0, 1);
+                return BABYLON.Scalar.Clamp(metallic, 0, 1);
             }
 
             var diffuse = specularGlossiness.diffuse;
