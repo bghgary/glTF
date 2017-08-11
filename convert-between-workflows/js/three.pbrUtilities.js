@@ -32,23 +32,15 @@ var THREE;
 
         PbrUtilities.ConvertToMetallicRoughness = function (specularGlossiness) {
             function solveMetallic(diffuse, specular, oneMinusSpecularStrength) {
-                specular = Math.max(specular, dielectricSpecular.r);
+                if (specular < dielectricSpecular.r) {
+                    return 0;
+                }
 
                 var a = dielectricSpecular.r;
                 var b = diffuse * oneMinusSpecularStrength / (1 - dielectricSpecular.r) + specular - 2 * dielectricSpecular.r;
                 var c = dielectricSpecular.r - specular;
                 var D = Math.max(b * b - 4 * a * c, 0);
-                var sqrtD = Math.sqrt(D);
-                var oneOver2a = 1 / (2 * a);
-
-                // Favor lower metallic values
-                var metallic = (-b - sqrtD) * oneOver2a;
-                if (metallic >= 0) {
-                    return Math.min(metallic, 1);
-                }
-
-                metallic = (-b + sqrtD) * oneOver2a;
-                return THREE.Math.clamp(metallic, 0, 1);
+                return THREE.Math.clamp((-b + Math.sqrt(D)) / (2 * a), 0, 1);
             }
 
             var diffuse = specularGlossiness.diffuse;
@@ -59,8 +51,8 @@ var THREE;
             var oneMinusSpecularStrength = 1 - specular.getMaxComponent();
             var metallic = solveMetallic(diffuse.getPerceivedBrightness(), specular.getPerceivedBrightness(), oneMinusSpecularStrength);
 
-            var baseColorFromDiffuse = diffuse.clone().multiplyScalar(Math.min(oneMinusSpecularStrength / Math.max((1 - dielectricSpecular.r) * (1 - metallic), epsilon), 1));
-            var baseColorFromSpecular = specular.clone().sub(dielectricSpecular.clone().multiplyScalar((1 - metallic) * (1 / Math.max(metallic, epsilon))));
+            var baseColorFromDiffuse = diffuse.clone().multiplyScalar(oneMinusSpecularStrength / (1 - dielectricSpecular.r) / Math.max(1 - metallic, epsilon));
+            var baseColorFromSpecular = specular.clone().sub(dielectricSpecular.clone().multiplyScalar(1 - metallic)).multiplyScalar(1 / Math.max(metallic, epsilon));
             var baseColor = baseColorFromDiffuse.clone().lerp(baseColorFromSpecular, metallic * metallic).clamp();
 
             return {
