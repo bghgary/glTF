@@ -184,7 +184,6 @@
         function createLabel(text) {
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 512, scene, true);
             dynamicTexture.hasAlpha = true;
-            dynamicTexture.useAlphaFromAlbedoTexture
             dynamicTexture.drawText(text, null, null, "36px Arial", "black", "transparent", true);
             var plane = BABYLON.Mesh.CreatePlane("TextPlane", 10, scene);
             plane.material = new BABYLON.StandardMaterial("TextPlaneMaterial", scene);
