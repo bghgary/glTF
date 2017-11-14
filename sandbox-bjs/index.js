@@ -1,4 +1,4 @@
-﻿/// <reference path="../../babylon.js" />
+﻿/// <reference path="../dist/preview release/babylon.d.ts" />
 
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
@@ -17,20 +17,27 @@ if (BABYLON.Engine.isSupported()) {
     var filesInput;
     var currentHelpCounter;
     var currentScene;
+    var currentSkybox;
     var enableDebugLayer = false;
+    var currentPluginName;
+    var toExecuteAfterSceneCreation;
+
+    canvas.addEventListener("contextmenu", function(evt) {
+        evt.preventDefault();
+    }, false);
 
     // maps to attribution for image files here per cc license guidelines
     // first element must match background name in gui menu
     var environments = {
-        "country": "http://www.openfootage.net/",
-        "wobblyBridge": "https://hdrihaven.com/bundle.php?b=free_bundle",
+        "blender": "http://adaptivesamples.com/2017/01/17/blender-institute-hdri/",
+        "country": "https://www.openfootage.net/hdri-360-saalfelden-austria/",
+        "ennis": "http://gl.ict.usc.edu/Data/HighResProbes/",
+        "garage": "https://hdrihaven.com/hdri.php?hdri=garage",
         "gray": "http://www.microsoft.com/",
-        "hill": "https://hdrihaven.com/bundle.php?b=free_bundle",
-        "woods": "https://hdrihaven.com/bundle.php?b=free_bundle",
-        "theater": "http://www.hdrlabs.com/",
-        "darkPark": "http://noemotionhdrs.net/"
+        "indoor": "https://hdrihaven.com/hdri.php?hdri=blinds",
+        "night": "https://www.openfootage.net/hdri-3-0-360-river-power-station/",
+        "none": ""
     };
-
     var settings = new (function () {
         this.environment = new (function () {
             this.name = Object.keys(environments)[0];
@@ -42,13 +49,23 @@ if (BABYLON.Engine.isSupported()) {
     });
 
     var gui = null;
-    var hdrTexture = null;
 
     currentHelpCounter = localStorage.getItem("helpcounter");
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
     if (!currentHelpCounter) currentHelpCounter = 0;
+
+    // Setting up some GLTF values
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+        currentPluginName = plugin.name;
+
+        if (plugin.name !== "gltf") {
+            return;
+        }
+
+        plugin.compileMaterials = true;
+    });
 
     // Resize
     window.addEventListener("resize", function () {
@@ -66,21 +83,50 @@ if (BABYLON.Engine.isSupported()) {
             enableDebugLayer = false;
             currentScene.debugLayer.hide();
         };
+
         if (enableDebugLayer) {
             hideDebugLayerAndLogs();
         }
+
+        // Clear the error
+        document.getElementById("errorZone").style.display = 'none';
+
         currentScene = babylonScene;
         document.title = "BabylonJS - " + sceneFile.name;
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
-        var camera = new BABYLON.ArcRotateCamera("camera", 4.712, 1.571, 2, BABYLON.Vector3.Zero(), currentScene);
-        camera.attachControl(canvas);
-        camera.minZ = 0.1;
-        camera.maxZ = 100;
-        camera.lowerRadiusLimit = 0.1;
-        camera.upperRadiusLimit = 5;
-        camera.wheelPrecision = 100;
+        // Attach camera to canvas inputs
+        if (!currentScene.activeCamera || currentScene.lights.length === 0) {
+            currentScene.createDefaultCameraOrLight(true);
+            // Enable camera's behaviors
+            currentScene.activeCamera.useFramingBehavior = true;
+
+            var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+
+            if (currentScene.meshes.length) {
+                var worldExtends = currentScene.getWorldExtends();
+                currentScene.activeCamera.lowerRadiusLimit = null;
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+
+            currentScene.activeCamera.pinchPrecision = 200 / currentScene.activeCamera.radius;
+            currentScene.activeCamera.upperRadiusLimit = 5 * currentScene.activeCamera.radius;
+
+            currentScene.activeCamera.wheelDeltaPercentage = 0.01;
+            currentScene.activeCamera.pinchDeltaPercentage = 0.01;
+        }
+
+        currentScene.activeCamera.attachControl(canvas); 
+
+        if (currentPluginName === "gltf") {
+            updateEnvironment();
+
+            // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+            currentScene.activeCamera.alpha += Math.PI;
+        }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (currentScene.meshes.length === 0 && currentScene.clearColor.r === 1 && currentScene.clearColor.g === 0 && currentScene.clearColor.b === 0) {
@@ -105,11 +151,52 @@ if (BABYLON.Engine.isSupported()) {
             }
         }
 
-        normalizeModel();
-        updateEnvironment();
+        if (toExecuteAfterSceneCreation) {
+            toExecuteAfterSceneCreation();
+        }
+
     };
 
-    filesInput = new BABYLON.FilesInput(engine, null, canvas, sceneLoaded);
+    var sceneError = function (sceneFile, babylonScene, message) {
+        document.title = "BabylonJS - " + sceneFile.name;
+        document.getElementById("logo").className = "";
+        canvas.style.opacity = 0;
+
+        var errorContent = '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>' + message.replace("file:[object File]", "'" + sceneFile.name + "'") + '</div>';
+
+        document.getElementById("errorZone").style.display = 'block';
+        document.getElementById("errorZone").innerHTML = errorContent;
+
+        // Close button error
+        document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
+            document.getElementById("errorZone").style.display = 'none';
+        });
+    };
+
+    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
+    filesInput.onProcessFileCallback = (function (file, name, extension) {
+        if (extension === "dds") {
+            BABYLON.FilesInput.FilesToLoad[name] = file;
+            var loadTexture = () => {
+                if (currentPluginName === "gltf") { // currentPluginName is updated only once scene is loaded
+                    var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("file:" + file.correctName, currentScene);
+                    if (currentSkybox) {
+                        currentSkybox.dispose();
+                    }
+                    currentSkybox = currentScene.createDefaultSkybox(newHdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+                }
+            }
+            if (currentScene) {
+                loadTexture();
+            }
+            else {
+                // Postpone texture loading until scene is loaded
+                toExecuteAfterSceneCreation = loadTexture;
+            }
+            return false;
+        }
+        return true;
+    }).bind(this);
     filesInput.monitorElementForDragNDrop(canvas);
 
     window.addEventListener("keydown", function (evt) {
@@ -139,7 +226,6 @@ if (BABYLON.Engine.isSupported()) {
             gui = new dat.GUI({ width: 300 });
             var environmentFolder = gui.addFolder("environment");
             environmentFolder.add(settings.environment, "name", Object.keys(environments)).onChange(updateEnvironment);
-            environmentFolder.add(settings.environment, "attribution").listen();
             environmentFolder.open();
             var extensionsFolder = gui.addFolder("extensions");
             extensionsFolder.add(settings.extensions, "pbrSpecularGlossiness").onChange(() => {
@@ -179,61 +265,39 @@ if (BABYLON.Engine.isSupported()) {
         }, 5000);
     }
 
-    function normalizeModel() {
-        var model = new BABYLON.Mesh("model", currentScene);
-        currentScene.meshes.forEach(function (mesh) {
-            if (mesh !== model) {
-                mesh.setParent(model);
-            }
-        });
-        var extents = currentScene.getWorldExtends();
-        var size = extents.max.subtract(extents.min);
-        var center = extents.min.add(size.scale(0.5));
-        var oneOverLength = 1 / size.length();
-        model.scaling.scaleInPlace(oneOverLength);
-        model.position.subtractInPlace(center.scale(oneOverLength));
-    }
+    sizeScene();
 
-    function updateEnvironment() {
-        if (!settings.environment.name) {
-            return;
+    window.onresize = function () {
+        sizeScene();
+    }
+}
+
+function sizeScene () {
+    let divInspWrapper = document.getElementsByClassName('insp-wrapper')[0];
+    if (divInspWrapper) {
+        let divFooter = document.getElementsByClassName('footer')[0];
+        divInspWrapper.style.height = (document.body.clientHeight - divFooter.clientHeight) + "px";
+        divInspWrapper.style['max-width'] = document.body.clientWidth + "px";
+    }
+}
+
+function updateEnvironment() {
+
+    if (currentScene) {
+        var attributionElement = document.getElementById("attribution");
+        if (attributionElement) {
+            var attribution = environments[settings.environment.name];
+            attributionElement.innerText = attribution;
+            document.getElementById("attributionLink").href = attribution;
         }
 
-        settings.environment.attribution = environments[settings.environment.name] || "";
-
-        if (currentScene) {
-            if (hdrTexture) {
-                hdrTexture.dispose();
-                hdrTexture = null;
-            }
-
-            hdrTexture = new BABYLON.HDRCubeTexture("Environments/" + settings.environment.name + ".babylon.hdr", currentScene);
-
-            skybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 100, currentScene);
-            skybox.material = new BABYLON.PBRMaterial("skyBox", currentScene);
-            skybox.material.reflectionTexture = hdrTexture.clone();
-            skybox.material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-            skybox.material.backFaceCulling = false;
-            skybox.material.microSurface = 1.0;
-            skybox.material.cameraExposure = 0.6;
-            skybox.material.cameraContrast = 1.6;
-            skybox.material.disableLighting = true;
-            skybox.infiniteDistance = true;
-
-            updateModelReflectionTextures();
+        if (currentSkybox) {
+            currentSkybox.dispose();
         }
-    }
 
-    function updateModelReflectionTextures() {
-        currentScene.meshes.forEach(function (mesh) {
-            var material = mesh.material;
-            if (material instanceof BABYLON.MultiMaterial) {
-                material.subMaterials.forEach(function (subMaterial) {
-                    if (subMaterial instanceof BABYLON.PBRMaterial) {
-                        subMaterial.reflectionTexture = hdrTexture;
-                    }
-                });
-            }
-        });
+        if (settings.environment.name !== "none") {
+            var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Environments/" + settings.environment.name + "SpecularHDR.dds", currentScene);
+            currentSkybox = currentScene.createDefaultSkybox(newHdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+        }
     }
 }
