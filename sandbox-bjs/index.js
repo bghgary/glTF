@@ -295,7 +295,10 @@ function updateEnvironment() {
             currentSkybox.dispose();
         }
 
-        if (settings.environment.name !== "none") {
+        if (settings.environment.name === "none") {
+            currentScene.environmentTexture = null;
+        }
+        else {
             var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Environments/" + settings.environment.name + "SpecularHDR.dds", currentScene);
             currentSkybox = currentScene.createDefaultSkybox(newHdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
         }
