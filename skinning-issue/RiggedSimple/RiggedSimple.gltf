@@ -1,0 +1,389 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 515,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 515,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 515,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 515,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 515,
+      "type": "VEC3",
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5123,
+      "count": 2304,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 96,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5126,
+      "count": 96,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 96,
+      "type": "VEC3",
+      "max": [
+        1.0,
+        1.0,
+        4.575077
+      ],
+      "min": [
+        -1.0,
+        -0.9999996,
+        -4.575077
+      ]
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5121,
+      "count": 96,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 96,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5123,
+      "count": 564,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 6,
+      "type": "SCALAR",
+      "max": [
+        2.0333333
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5126,
+      "count": 18,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5126,
+      "count": 2,
+      "type": "MAT4"
+    }
+  ],
+  "animations": [
+    {
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 1,
+            "path": "rotation"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 12,
+          "interpolation": "CUBICSPLINE",
+          "output": 13
+        }
+      ],
+      "name": "Take 001"
+    }
+  ],
+  "asset": {
+    "generator": "glTF Tools for Unity",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 4120
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 4120,
+      "byteLength": 4120
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 8240,
+      "byteLength": 6180
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 14420,
+      "byteLength": 8240
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 22660,
+      "byteLength": 6180
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 28840,
+      "byteLength": 4608
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 33448,
+      "byteLength": 1152
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 34600,
+      "byteLength": 1536
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 36136,
+      "byteLength": 1152
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 37288,
+      "byteLength": 384
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 37672,
+      "byteLength": 1536
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 39208,
+      "byteLength": 1128
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 40336,
+      "byteLength": 24
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 40360,
+      "byteLength": 288
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 40648,
+      "byteLength": 128
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "RiggedSimple.bin",
+      "byteLength": 40776
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 0,
+            "TEXCOORD_1": 1,
+            "NORMAL": 2,
+            "TANGENT": 3,
+            "POSITION": 4
+          },
+          "indices": 5,
+          "material": 0
+        }
+      ],
+      "name": "Sphere"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 6,
+            "TANGENT": 7,
+            "POSITION": 8,
+            "JOINTS_0": 9,
+            "WEIGHTS_0": 10
+          },
+          "indices": 11,
+          "material": 0
+        }
+      ],
+      "name": "Cylinder"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.06355747,
+          0.3672465,
+          0.0366176181,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.5
+      },
+      "name": "Material_001"
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "translation": [
+        0.0,
+        6.0,
+        0.0
+      ],
+      "name": "Sphere"
+    },
+    {
+      "children": [
+        0
+      ],
+      "rotation": [
+        0.28804934,
+        8.449736E-05,
+        -0.000277855026,
+        0.957615554
+      ],
+      "scale": [
+        0.99999994,
+        1.0,
+        1.00000012
+      ],
+      "translation": [
+        0.0,
+        4.187171,
+        0.0
+      ],
+      "name": "Bone.001"
+    },
+    {
+      "children": [
+        1
+      ],
+      "rotation": [
+        -0.704740465,
+        0.0,
+        0.0,
+        0.7094652
+      ],
+      "scale": [
+        1.0,
+        0.99999994,
+        0.99999994
+      ],
+      "translation": [
+        0.0,
+        -3.15606E-07,
+        4.18033
+      ],
+      "name": "Bone"
+    },
+    {
+      "children": [
+        2
+      ],
+      "rotation": [
+        0.5,
+        -0.5,
+        0.5,
+        0.5
+      ],
+      "name": "Armature"
+    },
+    {
+      "skin": 0,
+      "mesh": 1,
+      "rotation": [
+        0.5,
+        -0.5,
+        0.5,
+        0.5
+      ],
+      "translation": [
+        5,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "name": "Cylinder"
+    },
+    {
+      "children": [
+        3,
+        4
+      ],
+      "name": "RiggedSimple"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        5
+      ]
+    }
+  ],
+  "skins": [
+    {
+      "inverseBindMatrices": 14,
+      "joints": [
+        2,
+        1
+      ],
+      "skeleton": 2
+    }
+  ]
+}

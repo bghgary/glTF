@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Skinning Issue - Example 1</title>
+
+    <script src="babylon.max.js"></script>
+    <script src="babylon.glTF2FileLoader.js"></script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas);
+        var scene = new BABYLON.Scene(engine);
+        scene.createDefaultLight(true);
+        BABYLON.SceneLoader.AppendAsync("../RiggedSimple/", "RiggedSimple.gltf", scene).then(function (scene) {
+            scene.createDefaultCamera(true, true, true);
+            scene.activeCamera.alpha += Math.PI;
+            engine.runRenderLoop(function () {
+                scene.render();
+            });
+        });
+    </script>
+</body>
