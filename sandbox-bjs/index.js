@@ -65,6 +65,11 @@ if (BABYLON.Engine.isSupported()) {
         }
 
         plugin.compileMaterials = true;
+        plugin.onExtensionLoaded = function (extension) {
+            if (extension.name === "KHR_materials_pbrSpecularGlossiness") {
+                extension.enabled = settings.extensions.pbrSpecularGlossiness;
+            }
+        };
     });
 
     // Resize
@@ -229,7 +234,6 @@ if (BABYLON.Engine.isSupported()) {
             environmentFolder.open();
             var extensionsFolder = gui.addFolder("extensions");
             extensionsFolder.add(settings.extensions, "pbrSpecularGlossiness").onChange(() => {
-                BABYLON.GLTF2.GLTFLoader.Extensions.KHR_materials_pbrSpecularGlossiness.enabled = settings.extensions.pbrSpecularGlossiness;
                 filesInput.reload();
             });
             extensionsFolder.open();
