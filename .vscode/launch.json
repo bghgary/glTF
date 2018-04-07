@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "sandbox-bjs",
+            "url": "http://localhost:8000/sandbox-bjs",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "webserver"
+        }
+    ]
+}

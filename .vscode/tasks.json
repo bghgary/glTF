@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "webserver",
+            "type": "shell",
+            "command": "gulp webserver",
+            "options": {
+                "cwd": "${workspaceRoot}/.gulp"
+            },
+            "isBackground": true,
+            "problemMatcher": []
+        }
+    ]
+}

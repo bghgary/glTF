@@ -1,6 +1,4 @@
-﻿/// <reference path="../dist/preview release/babylon.d.ts" />
-
-if (BABYLON.Engine.isSupported()) {
+﻿if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
     var engine = new BABYLON.Engine(canvas, true);
     var divFps = document.getElementById("fps");
@@ -38,17 +36,58 @@ if (BABYLON.Engine.isSupported()) {
         "night": "https://www.openfootage.net/hdri-3-0-360-river-power-station/",
         "none": ""
     };
-    var settings = new (function () {
-        this.environment = new (function () {
-            this.name = Object.keys(environments)[0];
-            this.attribution = "";
-        });
-        this.extensions = new (function () {
-            this.pbrSpecularGlossiness = true;
-        });
-    });
+    var settings = {
+        environment: {
+            name: Object.keys(environments)[0],
+            attribution: "",
+        },
+        extensions: {
+            KHR_draco_mesh_compression: {
+                enabled: true
+            },
+            KHR_lights: {
+                enabled: true
+            },
+            KHR_materials_pbrSpecularGlossiness: {
+                enabled: true
+            },
+            KHR_materials_unlit: {
+                enabled: true
+            },
+            MSFT_lod: {
+                enabled: true,
+                maxLODsToLoad: Number.MAX_VALUE
+            }
+        },
+        animations: {
+            name: ""
+        }
+    };
 
-    var gui = null;
+    var gui = new dat.GUI({ width: 300, hideable: true });
+    gui.domElement.style.display = "none";
+
+    var environmentFolder = gui.addFolder("environment");
+    environmentFolder.add(settings.environment, "name", Object.keys(environments)).onChange(updateEnvironment);
+    environmentFolder.open();
+    updateEnvironment();
+
+    var extensionsFolder = gui.addFolder("extensions");
+    extensionsFolder.open();
+
+    var extensions = settings.extensions;
+    for (var name in extensions) {
+        var extension = extensions[name];
+        var extensionFolder = extensionsFolder.addFolder(name);
+        extensionFolder.open();
+        for (var property in extension) {
+            extensionFolder.add(extension, property).onChange(function () {
+                filesInput.reload();
+            });
+        }
+    }
+
+    var animationsFolder = null;
 
     currentHelpCounter = localStorage.getItem("helpcounter");
 
@@ -57,19 +96,17 @@ if (BABYLON.Engine.isSupported()) {
     if (!currentHelpCounter) currentHelpCounter = 0;
 
     // Setting up some GLTF values
-    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
         currentPluginName = plugin.name;
 
-        if (plugin.name !== "gltf") {
-            return;
+        if (plugin.name === "gltf") {
+            plugin.onExtensionLoaded = function (extension) {
+                var settingsExtension = settings.extensions[extension.name];
+                for (var property in settingsExtension) {
+                    extension[property] = settingsExtension[property];
+                }
+            };
         }
-
-        plugin.compileMaterials = true;
-        plugin.onExtensionLoaded = function (extension) {
-            if (extension.name === "KHR_materials_pbrSpecularGlossiness") {
-                extension.enabled = settings.extensions.pbrSpecularGlossiness;
-            }
-        };
     });
 
     // Resize
@@ -131,6 +168,25 @@ if (BABYLON.Engine.isSupported()) {
 
             // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
             currentScene.activeCamera.alpha += Math.PI;
+
+            if (animationsFolder) {
+                gui.removeFolder(animationsFolder);
+            }
+
+            var animationGroups = currentScene.animationGroups;
+            if (animationGroups) {
+                animationsFolder = gui.addFolder("animations");
+                animationsFolder.open();
+
+                settings.animations.name = animationGroups[0].name;
+                animationsFolder.add(settings.animations, "name", animationGroups.map(_ => _.name)).onChange(function () {
+                    currentScene.stopAllAnimations();
+                    var animationGroup = currentScene.getAnimationGroupByName(settings.animations.name);
+                    if (animationGroup) {
+                        animationGroup.start(true);
+                    }
+                });
+            }
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
@@ -223,22 +279,7 @@ if (BABYLON.Engine.isSupported()) {
         filesInput.loadFiles(event);
     }, false);
     btnSettings.addEventListener('click', function () {
-        if (gui) {
-            gui.destroy();
-            gui = null;
-        }
-        else {
-            gui = new dat.GUI({ width: 300 });
-            var environmentFolder = gui.addFolder("environment");
-            environmentFolder.add(settings.environment, "name", Object.keys(environments)).onChange(updateEnvironment);
-            environmentFolder.open();
-            var extensionsFolder = gui.addFolder("extensions");
-            extensionsFolder.add(settings.extensions, "pbrSpecularGlossiness").onChange(() => {
-                filesInput.reload();
-            });
-            extensionsFolder.open();
-            updateEnvironment();
-        }
+        gui.domElement.style.display = gui.domElement.style.display === "" ? "none" : "";
     }, false);
     btnFullScreen.addEventListener('click', function () {
         engine.switchFullscreen(true);
@@ -286,7 +327,6 @@ function sizeScene () {
 }
 
 function updateEnvironment() {
-
     if (currentScene) {
         var attributionElement = document.getElementById("attribution");
         if (attributionElement) {
