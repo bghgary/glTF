@@ -174,7 +174,7 @@
             }
 
             var animationGroups = currentScene.animationGroups;
-            if (animationGroups) {
+            if (animationGroups && animationGroups.length !== 0) {
                 animationsFolder = gui.addFolder("animations");
                 animationsFolder.open();
 
