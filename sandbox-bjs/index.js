@@ -60,6 +60,7 @@
             }
         },
         animations: {
+            enableBlending: false,
             name: ""
         }
     };
@@ -185,6 +186,13 @@
                     if (animationGroup) {
                         animationGroup.start(true);
                     }
+                });
+
+                currentScene.animationPropertiesOverride = new BABYLON.AnimationPropertiesOverride();
+                currentScene.animationPropertiesOverride.enableBlending = settings.animations.enableBlending;
+
+                animationsFolder.add(settings.animations, "enableBlending").onChange(function () {
+                    currentScene.animationPropertiesOverride.enableBlending = settings.animations.enableBlending;
                 });
             }
         }
