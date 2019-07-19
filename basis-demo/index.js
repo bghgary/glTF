@@ -54,6 +54,9 @@ if (BABYLON.Engine.isSupported()) {
     var skyboxPath = skyboxes[defaultSkyboxIndex];
     var debugLayerEnabled = false;
 
+    var available = ['-astc.ktx', '-dxt.ktx', '-pvrtc.ktx', '-etc2.ktx'];
+    engine.setTextureFormatToUse(available);
+
     engine.loadingUIBackgroundColor = "#2A2342";
 
     btnInspector.classList.add("hidden");
