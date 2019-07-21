@@ -4629,7 +4629,10 @@ var KHR_texture_cttf = /** @class */ (function () {
             var sampler = (texture.sampler == undefined ? _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].DefaultSampler : _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(context + "/sampler", _this._loader.gltf.samplers, texture.sampler));
             var samplerData = _this._loader.loadSampler("/samplers/" + sampler.index, sampler);
             var image = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/source", _this._loader.gltf.images, extension.source);
-            return _this._loader.createTextureAsync(context, samplerData, image, assign);
+            return _this._loader.createTextureAsync(context, samplerData, image, function (babylonTexture) {
+                babylonTexture.gammaSpace = false;
+                assign(babylonTexture);
+            });
         });
     };
     return KHR_texture_cttf;
