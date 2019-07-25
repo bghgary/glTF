@@ -21,8 +21,10 @@ function createScene(canvas, afterRender) {
             afterRender(engine, scene);
         });
 
-        scene.debugLayer.show({
-            
-        });
+        scene.debugLayer.show();
+    });
+
+    window.addEventListener("resize", function() {
+        engine.resize();
     });
 }
