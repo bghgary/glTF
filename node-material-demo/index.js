@@ -4,7 +4,7 @@ function createScene(canvas, afterRender) {
     var engine = new BABYLON.Engine(canvas);
     var scene = new BABYLON.Scene();
 
-    BABYLON.SceneLoader.AppendAsync("./MatCap/BabylonShaderBall_Simple.gltf").then(function () {
+    BABYLON.SceneLoader.AppendAsync("./matcap/BabylonShaderBall_Simple.gltf").then(function () {
         scene.createDefaultCamera(true, true, true);
 
         var material = new BABYLON.NodeMaterial("matcap");
