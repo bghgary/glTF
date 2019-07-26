@@ -6,6 +6,9 @@ function createScene(canvas, afterRender) {
 
     BABYLON.SceneLoader.AppendAsync("./matcap/BabylonShaderBall_Simple.gltf").then(function () {
         scene.createDefaultCamera(true, true, true);
+        scene.activeCamera.useAutoRotationBehavior = true;
+        scene.activeCamera.autoRotationBehavior.idleRotationSpeed = 0.5;
+        scene.activeCamera.autoRotationBehavior.idleRotationWaitTime = 0.5;
 
         var material = new BABYLON.NodeMaterial("matcap");
         material.sideOrientation = BABYLON.PBRMaterial.ClockWiseSideOrientation;
