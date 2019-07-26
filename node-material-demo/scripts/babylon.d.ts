@@ -19622,6 +19622,10 @@ declare module BABYLON {
          */
         onClear: (Engine: Engine) => void;
         /**
+         * An event triggered when the texture is resized.
+         */
+        onResizeObservable: Observable<RenderTargetTexture>;
+        /**
          * Define the clear color of the Render Target if it should be different from the scene.
          */
         clearColor: Color4;
@@ -31569,6 +31573,27 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Interface for screenshot methods with describe argument called `size` as object with options
+     * @link https://doc.babylonjs.com/api/classes/babylon.screenshottools
+     */
+    export interface IScreenshotSize {
+        /**
+         * number in pixels for canvas height
+         */
+        height?: number;
+        /**
+         * multiplier allowing render at a higher or lower resolution
+         * If value is defined then height and width will be ignored and taken from camera
+         */
+        precision?: number;
+        /**
+         * number in pixels for canvas width
+         */
+        width?: number;
+    }
+}
+declare module BABYLON {
     interface IColor4Like {
         r: float;
         g: float;
@@ -31894,7 +31919,7 @@ declare module BABYLON {
          * @param mimeType defines the MIME type of the screenshot image (default: image/png).
          * Check your browser for supported MIME types
          */
-        static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string): void;
+        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string): void;
         /**
          * Captures a screenshot of the current rendering
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -31910,7 +31935,7 @@ declare module BABYLON {
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType?: string): Promise<string>;
         /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -31930,7 +31955,7 @@ declare module BABYLON {
          * @param antialiasing Whether antialiasing should be turned on or not (default: false)
          * @param fileName A name for for the downloaded file.
          */
-        static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
         /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -31949,7 +31974,7 @@ declare module BABYLON {
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
         /**
          * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
          * Be aware Math.random() could cause collisions, but:
@@ -33858,6 +33883,12 @@ declare module BABYLON {
          * @return the material or null if none found.
          */
         getMaterialByName(name: string): Nullable<Material>;
+        /**
+         * Get a texture using its unique id
+         * @param uniqueId defines the texture's unique id
+         * @return the texture or null if none found.
+         */
+        getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture>;
         /**
          * Gets a camera using its id
          * @param id defines the id to look for
@@ -51192,20 +51223,6 @@ declare module BABYLON {
         Color4 = 64,
         /** Matrix */
         Matrix = 128,
-        /** Vector3 or Color3 */
-        Vector3OrColor3 = 40,
-        /** Vector3 or Vector4 */
-        Vector3OrVector4 = 24,
-        /** Vector4 or Color4 */
-        Vector4OrColor4 = 80,
-        /** Color3 or Color4 */
-        Color3OrColor4 = 96,
-        /** Vector2 or Color3 or Color4 */
-        Vector2OrColor3OrColor4 = 100,
-        /** Vector3 or Color3 or Color4 or Vector4 */
-        Vector3OrColor3OrVector4OrColor4 = 120,
-        /** Vector2 or Vector3 or Color3 or Color4 or Vector4 */
-        Vector2OrVector3OrColor3OrVector4OrColor4 = 124,
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
@@ -52212,6 +52229,10 @@ declare module BABYLON {
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
         /**
+         * Gets or sets the additional types supported byt this connection point
+         */
+        acceptedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
+        /**
          * Gets or sets the associated variable name in the shader
          */
         associatedVariableName: string;
@@ -52223,10 +52244,6 @@ declare module BABYLON {
          * Gets or sets the connection point name
          */
         name: string;
-        /**
-         * Gets or sets the swizzle to apply to this connection point when reading or writing
-         */
-        swizzle: string;
         /**
          * Gets or sets a boolean indicating that this connection point can be omitted
          */
@@ -52293,7 +52310,6 @@ declare module BABYLON {
          * @returns the serialized point object
          */
         serialize(): any;
-        private static _GetTypeLength;
     }
 }
 declare module BABYLON {
@@ -52472,6 +52488,10 @@ declare module BABYLON {
          * Gets the color input component
          */
         readonly color: NodeMaterialConnectionPoint;
+        /**
+         * Gets the alpha input component
+         */
+        readonly alpha: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -60466,7 +60486,7 @@ declare module BABYLON {
          * @param mimeType defines the MIME type of the screenshot image (default: image/png).
          * Check your browser for supported MIME types
          */
-        static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string): void;
+        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string): void;
         /**
          * Captures a screenshot of the current rendering
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -60502,7 +60522,7 @@ declare module BABYLON {
          * @param antialiasing Whether antialiasing should be turned on or not (default: false)
          * @param fileName A name for for the downloaded file.
          */
-        static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
         /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png

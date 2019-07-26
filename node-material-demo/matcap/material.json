@@ -22,38 +22,38 @@
     "fillMode": 0,
     "customType": "BABYLON.NodeMaterial",
     "outputNodes": [
-        49,
-        55
+        26,
+        32
     ],
     "blocks": [
         {
             "customType": "BABYLON.VertexOutputBlock",
-            "id": 49,
+            "id": 26,
             "name": "vertexOutput",
             "inputs": [
                 {
                     "name": "vector",
                     "inputName": "vector",
-                    "targetBlockId": 50,
+                    "targetBlockId": 27,
                     "targetConnectionName": "output"
                 }
             ]
         },
         {
             "customType": "BABYLON.TransformBlock",
-            "id": 50,
+            "id": 27,
             "name": "worldPos * viewProjectionTransform",
             "inputs": [
                 {
                     "name": "vector",
                     "inputName": "vector",
-                    "targetBlockId": 51,
+                    "targetBlockId": 28,
                     "targetConnectionName": "output"
                 },
                 {
                     "name": "transform",
                     "inputName": "transform",
-                    "targetBlockId": 54,
+                    "targetBlockId": 31,
                     "targetConnectionName": "output"
                 }
             ],
@@ -62,19 +62,19 @@
         },
         {
             "customType": "BABYLON.TransformBlock",
-            "id": 51,
+            "id": 28,
             "name": "worldPos",
             "inputs": [
                 {
                     "name": "vector",
                     "inputName": "vector",
-                    "targetBlockId": 52,
+                    "targetBlockId": 29,
                     "targetConnectionName": "output"
                 },
                 {
                     "name": "transform",
                     "inputName": "transform",
-                    "targetBlockId": 53,
+                    "targetBlockId": 30,
                     "targetConnectionName": "output"
                 }
             ],
@@ -83,7 +83,7 @@
         },
         {
             "customType": "BABYLON.InputBlock",
-            "id": 52,
+            "id": 29,
             "name": "position",
             "inputs": [],
             "type": 8,
@@ -92,7 +92,7 @@
         },
         {
             "customType": "BABYLON.InputBlock",
-            "id": 53,
+            "id": 30,
             "name": "world",
             "inputs": [],
             "type": 128,
@@ -101,7 +101,7 @@
         },
         {
             "customType": "BABYLON.InputBlock",
-            "id": 54,
+            "id": 31,
             "name": "viewProjection",
             "inputs": [],
             "type": 128,
@@ -110,7 +110,7 @@
         },
         {
             "customType": "BABYLON.FragmentOutputBlock",
-            "id": 55,
+            "id": 32,
             "name": "pixelOutput",
             "inputs": [
                 {
@@ -119,7 +119,7 @@
                 {
                     "name": "rgb",
                     "inputName": "rgb",
-                    "targetBlockId": 56,
+                    "targetBlockId": 33,
                     "targetConnectionName": "rgb"
                 },
                 {
@@ -129,19 +129,19 @@
         },
         {
             "customType": "BABYLON.TextureBlock",
-            "id": 56,
+            "id": 33,
             "name": "Texture",
             "inputs": [
                 {
                     "name": "uv",
                     "inputName": "uv",
-                    "targetBlockId": 57,
+                    "targetBlockId": 35,
                     "targetConnectionName": "output"
                 }
             ],
             "texture": {
                 "tags": null,
-                "url": "blob:http://localhost:8000/6b7b50c5-0782-45e1-aeec-584c50b0ea79",
+                "url": "blob:http://localhost:8000/d451aab1-615f-4278-bff8-9df50792e385",
                 "uOffset": 0,
                 "vOffset": 0,
                 "uScale": 1,
@@ -154,7 +154,7 @@
                 "wRotationCenter": 0.5,
                 "isBlocking": true,
                 "uniqueId": 63,
-                "name": "blob:http://localhost:8000/6b7b50c5-0782-45e1-aeec-584c50b0ea79",
+                "name": "blob:http://localhost:8000/d451aab1-615f-4278-bff8-9df50792e385",
                 "hasAlpha": false,
                 "getAlphaFromRGB": false,
                 "level": 1,
@@ -180,48 +180,32 @@
         },
         {
             "customType": "BABYLON.RemapBlock",
-            "id": 57,
+            "id": 35,
             "name": "Remap",
             "inputs": [
                 {
                     "name": "input",
                     "inputName": "input",
-                    "targetBlockId": 58,
-                    "targetConnectionName": "xy"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.VectorSplitterBlock",
-            "id": 58,
-            "name": "VectorSplitter",
-            "inputs": [
-                {
-                    "name": "xyzw",
-                    "inputName": "xyzw",
-                    "targetBlockId": 59,
+                    "targetBlockId": 37,
                     "targetConnectionName": "output"
-                },
-                {
-                    "name": "xyz "
                 }
             ]
         },
         {
             "customType": "BABYLON.TransformBlock",
-            "id": 59,
+            "id": 37,
             "name": "Transform",
             "inputs": [
                 {
                     "name": "vector",
                     "inputName": "vector",
-                    "targetBlockId": 61,
+                    "targetBlockId": 38,
                     "targetConnectionName": "output"
                 },
                 {
                     "name": "transform",
                     "inputName": "transform",
-                    "targetBlockId": 62,
+                    "targetBlockId": 39,
                     "targetConnectionName": "output"
                 }
             ],
@@ -230,7 +214,7 @@
         },
         {
             "customType": "BABYLON.InputBlock",
-            "id": 61,
+            "id": 38,
             "name": "normal",
             "inputs": [],
             "type": 8,
@@ -239,7 +223,7 @@
         },
         {
             "customType": "BABYLON.InputBlock",
-            "id": 62,
+            "id": 39,
             "name": "Matrix",
             "inputs": [],
             "type": 128,
