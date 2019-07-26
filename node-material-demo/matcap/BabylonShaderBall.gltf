@@ -1,0 +1,119 @@
+{
+  "asset": {
+    "generator": "BabylonJS",
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "byteLength": 331504,
+      "uri": "BabylonShaderBall.bin"
+    }
+  ],
+  "nodes": [
+    {
+      "name": "ball",
+      "mesh": 0,
+      "rotation": [
+        0,
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3
+        }
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0,
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 91572,
+      "name": "position - ball",
+      "byteStride": 12,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 91572,
+      "byteOffset": 91572,
+      "name": "normal - ball",
+      "byteStride": 12
+    },
+    {
+      "buffer": 0,
+      "byteLength": 61048,
+      "byteOffset": 183144,
+      "name": "uv - ball",
+      "byteStride": 8
+    },
+    {
+      "buffer": 0,
+      "byteLength": 87312,
+      "byteOffset": 244192,
+      "name": "Indices - ball"
+    }
+  ],
+  "accessors": [
+    {
+      "name": "position - ball",
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 7631,
+      "type": "VEC3",
+      "min": [
+        -1,
+        -0.93073123693466187,
+        -0.920086145401001
+      ],
+      "max": [
+        0.99999994039535522,
+        0.93073123693466187,
+        0.920086145401001
+      ],
+      "byteOffset": 0
+    },
+    {
+      "name": "normal - ball",
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 7631,
+      "type": "VEC3",
+      "byteOffset": 0
+    },
+    {
+      "name": "uv - ball",
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 7631,
+      "type": "VEC2",
+      "byteOffset": 0
+    },
+    {
+      "name": "indices - ball",
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 21828,
+      "type": "SCALAR",
+      "byteOffset": 0
+    }
+  ]
+}
